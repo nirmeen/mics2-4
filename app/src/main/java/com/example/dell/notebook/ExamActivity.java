@@ -57,7 +57,7 @@ public class ExamActivity extends AppCompatActivity {
 
     //sets question text and choice text
     private void setQuestion() {
-        if(wordsCount < 3){
+        if(wordsCount < 4){
             maxQuestionsCount = 1;
             selectedWord = db.getWordTranslation(0);
             randomIndices[currentQuestions - 1] = 0;
@@ -68,7 +68,7 @@ public class ExamActivity extends AppCompatActivity {
             wrongChoice1 = selectedWordText+c;
             wrongChoice2 = "none of these";
         }else{
-            randomWordIndex = (int)(Math.random() * (wordsCount-2));
+            randomWordIndex = (int)(Math.random() * (wordsCount-3))+1;
             if(currentQuestions != 1){
                 while(Arrays.asList(randomIndices).contains(randomWordIndex)){
                     randomWordIndex = (int)(Math.random() * (wordsCount-2));
