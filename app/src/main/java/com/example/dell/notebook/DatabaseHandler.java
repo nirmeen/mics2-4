@@ -23,6 +23,7 @@ import android.util.Log;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
+    private static DatabaseHandler sInstance;
     // Database Version
     private static final int DATABASE_VERSION = 1;
 
@@ -37,6 +38,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_NEWWORD = "newWord";
     private static final String KEY_KEY_TRANSLATEDWORD = "translated_word";
     Context context;
+    SQLiteDatabase db;
+
+    public static synchronized DatabaseHandler getInstance(Context context) {
+
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (sInstance == null) {
+            sInstance = new DatabaseHandler(context.getApplicationContext());
+        }
+        return sInstance;
+    }
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -46,6 +59,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
+        isCreating = true;
+        currentDB = db;
         String CREATE_WordTranslation_TABLE = "CREATE TABLE " + TABLE_WordTranslation + "("
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NEWWORD + " TEXT,"
                 + KEY_KEY_TRANSLATEDWORD + " TEXT" + ")";
@@ -64,9 +79,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
             }
 
+            isCreating = false;
+            currentDB = null;
+
         } catch (IOException e1) {
             Log.e("MainActivity", "Error reading data file" + line, e1);
             e1.printStackTrace();
+
+            isCreating = false;
+            currentDB = null;
         }
     }
 
@@ -86,20 +107,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // Adding new WordTranslation
     void addWordTranslation(WordTranslation WordTranslation) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_NEWWORD, WordTranslation.getNewWord()); // WordTranslation Name
-        values.put(KEY_KEY_TRANSLATEDWORD, WordTranslation.getWordMeaning()); // WordTranslation Phone
+        values.put(KEY_KEY_TRANSLATEDWORD, WordTranslation.getWordMeaning()); // WordTranslation meaning
 
         // Inserting Row
         db.insert(TABLE_WordTranslation, null, values);
-        db.close(); // Closing database connection
+        //db.close(); // Closing database connection
     }
 
     // Getting single WordTranslation
     WordTranslation getWordTranslation(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_WordTranslation, new String[] { KEY_ID,
                         KEY_NEWWORD, KEY_KEY_TRANSLATEDWORD }, KEY_ID + "=?",
@@ -113,13 +134,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return WordTranslation;
     }
 
+
     // Getting All WordTranslation
     public List<WordTranslation> getAllWordTranslation() {
         List<WordTranslation> WordTranslationList = new ArrayList<WordTranslation>();
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_WordTranslation;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
@@ -137,10 +159,22 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // return WordTranslation list
         return WordTranslationList;
     }
+    // Getting All WordTranslation Cursor
+    public Cursor getAllWordTranslationCursor() {
+        List<WordTranslation> WordTranslationList = new ArrayList<WordTranslation>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_WordTranslation;
+
+        db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // return WordTranslation list
+        return cursor;
+    }
 
     // Updating single WordTranslation
     public int updateWordTranslation(WordTranslation WordTranslation) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_NEWWORD, WordTranslation.getNewWord());
@@ -152,10 +186,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // Deleting single WordTranslation
     public void deleteWordTranslation(WordTranslation WordTranslation) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
         db.delete(TABLE_WordTranslation, KEY_ID + " = ?",
                 new String[] { String.valueOf(WordTranslation.getID()) });
-        db.close();
+        //db.close();
     }
 
 
@@ -164,10 +198,30 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String countQuery = "SELECT  * FROM " + TABLE_WordTranslation;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
-        cursor.close();
+        //cursor.close();
 
         // return count
         return cursor.getCount();
+    }
+    boolean isCreating = false;
+    SQLiteDatabase currentDB = null;
+
+    @Override
+    public SQLiteDatabase getWritableDatabase() {
+        // TODO Auto-generated method stub
+        if(isCreating && currentDB != null){
+            return currentDB;
+        }
+        return super.getWritableDatabase();
+    }
+
+    @Override
+    public SQLiteDatabase getReadableDatabase() {
+        // TODO Auto-generated method stub
+        if(isCreating && currentDB != null){
+            return currentDB;
+        }
+        return super.getReadableDatabase();
     }
 
 }

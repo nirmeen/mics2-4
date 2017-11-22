@@ -46,10 +46,10 @@ public class WordsListArrayAdapter extends ArrayAdapter<WordTranslation>  implem
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.list_view_items, null, true);
         }
-        WordTranslation p = (WordTranslation) getItem(position);
+        WordTranslation p = getItem(position);
 
-        TextView nwTextView = (TextView) v.findViewById(R.id.nwTextView);
-        TextView translatedtextView = (TextView) v.findViewById(R.id.translatedtextView);
+        TextView nwTextView = v.findViewById(R.id.nwTextView);
+        TextView translatedtextView = v.findViewById(R.id.translatedtextView);
         if (wordsList.size() >= 1 && position < wordsList.size()) {
             nwTextView.setText(wordsList.get(position).getNewWord());
             translatedtextView.setText(wordsList.get(position).getWordMeaning());
@@ -89,7 +89,7 @@ public class WordsListArrayAdapter extends ArrayAdapter<WordTranslation>  implem
                 for(int i=0;i<filterList.size();i++)
                 {
 
-                    if(filterList.get(i).getNewWord().startsWith(constraint.toString().toLowerCase()))
+                    if(filterList.get(i).getNewWord().toLowerCase().startsWith(constraint.toString().toLowerCase()))
                     {
                         WordTranslation p=new WordTranslation(filterList.get(i).getNewWord(), filterList.get(i).getWordMeaning());
                         filters.add(p);

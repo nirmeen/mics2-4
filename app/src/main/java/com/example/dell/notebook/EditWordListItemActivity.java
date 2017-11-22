@@ -2,28 +2,30 @@ package com.example.dell.notebook;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class EditWordListItemActivity extends AppCompatActivity {
     DatabaseHandler db;
     EditText nwTextView;
     EditText transTextView;
     int wID;
+    TextToSpeech toSpeech;
     private List<WordTranslation> WordTranslations = new ArrayList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_word_list_item);
-        db = new DatabaseHandler(this);
+        db = db.getInstance(this);
         WordTranslations = db.getAllWordTranslation();
         // Get the Intent that started this activity and extract the string
         Intent intent = getIntent();
@@ -38,12 +40,38 @@ public class EditWordListItemActivity extends AppCompatActivity {
         transTextView = (EditText) findViewById(R.id.TranslatedText);
         transTextView.setText(translatedWord);
 
+        toSpeech=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    toSpeech.setLanguage(Locale.FRANCE);
+                }
+            }
+        });
+
+    }
+
+    @SuppressWarnings("deprecation")
+    public  void onButtonClickListen(View view){
+        String w = nwTextView.getText().toString();
+        toSpeech.speak(w, TextToSpeech.QUEUE_FLUSH, null);
     }
     public void onButtonClickSave(View view) {
-        WordTranslations.get(wID).setNewWord(nwTextView.getText().toString());
-        WordTranslations.get(wID).setWordMeaning(transTextView.getText().toString());
-        db.updateWordTranslation(WordTranslations.get(wID));
-        finish();
+        if( !nwTextView.getText().toString().isEmpty() && !transTextView.getText().toString().isEmpty()){
+            WordTranslations.get(wID).setNewWord(nwTextView.getText().toString());
+            WordTranslations.get(wID).setWordMeaning(transTextView.getText().toString());
+            db.updateWordTranslation(WordTranslations.get(wID));
+            finish();
+        }else{
+            if( nwTextView.getText().toString().isEmpty()){
+                nwTextView.setError( "New word is required!" );
+            }
+            if( transTextView.getText().toString().isEmpty()){
+                transTextView.setError( "Word Translation is required!" );
+
+            }
+        }
+
     }
     public void onButtonClickDelete(View view) {
         AlertDialog.Builder alert = new AlertDialog.Builder(
@@ -76,4 +104,11 @@ public class EditWordListItemActivity extends AppCompatActivity {
         finish();
     }
 
+    public void onPause(){
+        if(toSpeech !=null){
+            toSpeech.stop();
+            toSpeech.shutdown();
+        }
+        super.onPause();
+    }
 }

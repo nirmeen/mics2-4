@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/add_word"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="Add Word" />
+    <item
+        android:id="@+id/import_words"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:title="Import Words" />
+    <item
+        android:id="@+id/export_words"
+        android:icon="@android:drawable/stat_sys_download_done"
+        android:title="Export Words" />
+    <item
+        android:id="@+id/exam"
+        android:icon="@android:drawable/checkbox_on_background"
+        android:title="Exam" />
+
+</menu>
